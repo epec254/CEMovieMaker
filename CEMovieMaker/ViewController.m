@@ -39,7 +39,7 @@
     UIImage *icon3 = [UIImage imageNamed:@"icon3"];
     
     NSDictionary *settings = [CEMovieMaker videoSettingsWithCodec:AVVideoCodecH264 withWidth:icon1.size.width andHeight:icon1.size.height];
-    self.movieMaker = [[CEMovieMaker alloc] initWithSettings:settings];
+    self.movieMaker = [[CEMovieMaker alloc] initWithSettings:settings frameRate:(NSInteger)10];
     for (NSInteger i = 0; i < 10; i++) {
         [frames addObject:icon1];
         [frames addObject:icon2];

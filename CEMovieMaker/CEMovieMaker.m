@@ -12,7 +12,7 @@ typedef UIImage*(^CEMovieMakerUIImageExtractor)(NSObject* inputObject);
 
 @implementation CEMovieMaker
 
-- (instancetype)initWithSettings:(NSDictionary *)videoSettings frameRate:(NSInteger *) frameRate;
+- (instancetype)initWithSettings:(NSDictionary *)videoSettings frameRate:(int) frameRate;
 {
     self = [self init];
     if (self) {
@@ -50,7 +50,7 @@ typedef UIImage*(^CEMovieMakerUIImageExtractor)(NSObject* inputObject);
                                           [NSNumber numberWithInt:kCVPixelFormatType_32ARGB], kCVPixelBufferPixelFormatTypeKey, nil];
         
         _bufferAdapter = [[AVAssetWriterInputPixelBufferAdaptor alloc] initWithAssetWriterInput:self.writerInput sourcePixelBufferAttributes:bufferAttributes];
-        _frameTime = CMTimeMake(1, (int)frameRate);
+        _frameTime = CMTimeMake(1, frameRate);
     }
     return self;
 }
