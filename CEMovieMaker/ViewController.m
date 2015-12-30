@@ -34,16 +34,17 @@
 {
     NSMutableArray *frames = [[NSMutableArray alloc] init];
     
-    UIImage *icon1 = [UIImage imageNamed:@"icon1"];
-    UIImage *icon2 = [UIImage imageNamed:@"icon2"];
-    UIImage *icon3 = [UIImage imageNamed:@"icon3"];
+    UIImage *icon1 = [UIImage imageNamed:@"image1"];
+    UIImage *icon2 = [UIImage imageNamed:@"image2"];
+//    UIImage *icon3 = [UIImage imageNamed:@"icon3"];
     
-    NSDictionary *settings = [CEMovieMaker videoSettingsWithCodec:AVVideoCodecH264 withWidth:icon1.size.width andHeight:icon1.size.height];
-    self.movieMaker = [[CEMovieMaker alloc] initWithSettings:settings frameRate:(NSInteger)10];
+    //NSDictionary *settings = [CEMovieMaker videoSettingsWithCodec:AVVideoCodecH264 withWidth:icon1.size.width andHeight:icon1.size.height];
+    NSDictionary *settings = [CEMovieMaker videoSettingsWithCodec:AVVideoCodecH264 withWidth:640 andHeight:480];
+    self.movieMaker = [[CEMovieMaker alloc] initWithSettings:settings frameRate:(NSInteger)12 forceResizeImages:true];
     for (NSInteger i = 0; i < 10; i++) {
         [frames addObject:icon1];
         [frames addObject:icon2];
-        [frames addObject:icon3];
+       // [frames addObject:icon3];
     }
 
     [self.movieMaker createMovieFromImages:[frames copy] withCompletion:^(NSURL *fileURL){
