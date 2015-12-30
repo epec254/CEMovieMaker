@@ -12,7 +12,7 @@ typedef UIImage*(^CEMovieMakerUIImageExtractor)(NSObject* inputObject);
 
 @implementation CEMovieMaker
 
-- (instancetype)initWithSettings:(NSDictionary *)videoSettings frameRate:(int) frameRate;
+- (instancetype)initWithSettings:(NSDictionary *)videoSettings frameRate:(int) frameRate forceResizeImages: (bool) shouldForceResizeImages;
 {
     self = [self init];
     if (self) {
@@ -50,10 +50,22 @@ typedef UIImage*(^CEMovieMakerUIImageExtractor)(NSObject* inputObject);
                                           [NSNumber numberWithInt:kCVPixelFormatType_32ARGB], kCVPixelBufferPixelFormatTypeKey, nil];
         
         _bufferAdapter = [[AVAssetWriterInputPixelBufferAdaptor alloc] initWithAssetWriterInput:self.writerInput sourcePixelBufferAttributes:bufferAttributes];
+        
+        
         _frameTime = CMTimeMake(1, frameRate);
+        
+        _shouldForceResizeImages = shouldForceResizeImages;
     }
     return self;
 }
+
+- (instancetype)initWithSettings:(NSDictionary *)videoSettings frameRate:(int) frameRate;
+
+{
+    //default is to not resize the images
+    return [self initWithSettings:videoSettings frameRate:frameRate forceResizeImages:false];
+}
+
 
 - (void) createMovieFromImageURLs:(NSArray CE_GENERIC_URL*)urls withCompletion:(CEMovieMakerCompletion)completion;
 {
@@ -73,6 +85,26 @@ typedef UIImage*(^CEMovieMakerUIImageExtractor)(NSObject* inputObject);
 {
     self.completionBlock = completion;
     
+    //placeholder for resized / original images
+    NSArray *updatedImages;
+    
+    if (self.shouldForceResizeImages) {
+        updatedImages = [[NSMutableArray alloc] init];
+        
+        //resize images if requested
+        for (NSInteger i = 0; i < [images count]; i++) {
+            CGFloat frameWidth = [[self.videoSettings objectForKey:AVVideoWidthKey] floatValue];
+            CGFloat frameHeight = [[self.videoSettings objectForKey:AVVideoHeightKey] floatValue];
+        
+            [(NSMutableArray *)updatedImages addObject: [CEMovieMaker resizeImage:[images objectAtIndex:i] toWidth:frameWidth toHeight:frameHeight]];
+        }
+    } else {
+        //do not resize images
+        updatedImages = images;
+    }
+    //end resize images
+
+    
     [self.assetWriter startWriting];
     [self.assetWriter startSessionAtSourceTime:kCMTimeZero];
     
@@ -80,7 +112,7 @@ typedef UIImage*(^CEMovieMakerUIImageExtractor)(NSObject* inputObject);
     
     __block NSInteger i = 0;
     
-    NSInteger frameNumber = [images count];
+    NSInteger frameNumber = [updatedImages count];
     
     [self.writerInput requestMediaDataWhenReadyOnQueue:mediaInputQueue usingBlock:^{
         while (YES){
@@ -88,7 +120,7 @@ typedef UIImage*(^CEMovieMakerUIImageExtractor)(NSObject* inputObject);
                 break;
             }
             if ([self.writerInput isReadyForMoreMediaData]) {
-                UIImage* img = extractor([images objectAtIndex:i]);
+                UIImage* img = extractor([updatedImages objectAtIndex:i]);
                 if (img == nil) {
                     i++;
                     NSLog(@"Warning: could not extract one of the frames");
@@ -172,12 +204,26 @@ typedef UIImage*(^CEMovieMakerUIImageExtractor)(NSObject* inputObject);
     return pxbuffer;
 }
 
++ (UIImage *)resizeImage:(UIImage *)image toWidth:(CGFloat)width toHeight:(CGFloat)height;
+{
+    
+    CGSize size=CGSizeMake(width, height);//set the width and height
+    UIGraphicsBeginImageContext(size);
+    [image drawInRect:CGRectMake(0,0,size.width,size.height)];
+    UIImage* newImage = UIGraphicsGetImageFromCurrentImageContext();
+    //here is the scaled image which has been changed to the size specified
+    UIGraphicsEndImageContext();
+    return newImage;
+}
+
 + (NSDictionary *)videoSettingsWithCodec:(NSString *)codec withWidth:(CGFloat)width andHeight:(CGFloat)height
 {
     
     if ((int)width % 16 != 0 ) {
         NSLog(@"Warning: video settings width must be divisible by 16.");
     }
+    
+    
     
     NSDictionary *videoSettings = @{AVVideoCodecKey : AVVideoCodecH264,
                                     AVVideoWidthKey : [NSNumber numberWithInt:(int)width],

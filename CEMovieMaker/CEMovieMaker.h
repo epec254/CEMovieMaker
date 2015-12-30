@@ -30,11 +30,14 @@ typedef void(^CEMovieMakerCompletion)(NSURL *fileURL);
 @property (nonatomic, assign) CMTime frameTime;
 @property (nonatomic, strong) NSURL *fileURL;
 @property (nonatomic, copy) CEMovieMakerCompletion completionBlock;
+@property (nonatomic) bool shouldForceResizeImages;
 
 - (instancetype)initWithSettings:(NSDictionary *)videoSettings frameRate:(int) frameRate;
+- (instancetype)initWithSettings:(NSDictionary *)videoSettings frameRate:(int) frameRate forceResizeImages: (bool) shouldForceResizeImages;
 - (void)createMovieFromImageURLs:(NSArray CE_GENERIC_URL*)urls withCompletion:(CEMovieMakerCompletion)completion;
 - (void)createMovieFromImages:(NSArray CE_GENERIC_IMAGE*)images withCompletion:(CEMovieMakerCompletion)completion;
 
++ (UIImage *)resizeImage:(UIImage *)image toWidth:(CGFloat)width toHeight:(CGFloat)height;
 + (NSDictionary *)videoSettingsWithCodec:(NSString *)codec withWidth:(CGFloat)width andHeight:(CGFloat)height;
 
 @end
