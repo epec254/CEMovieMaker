@@ -220,7 +220,9 @@ typedef UIImage*(^CEMovieMakerUIImageExtractor)(NSObject* inputObject);
 {
     
     if ((int)width % 16 != 0 ) {
-        NSLog(@"Warning: video settings width must be divisible by 16.");
+        NSLog(@"Warning: video settings width must be divisible by 16.  Adjusting size automatically.");
+        
+        width = width - ((int)width % 16);
     }
     
     
